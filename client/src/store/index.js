@@ -86,6 +86,7 @@ export const useGlobalStore = () => {
             }
             // UPDATE A LIST
             case GlobalStoreActionType.SET_CURRENT_LIST: {
+                console.log(payload)
                 return setStore({
                     idNamePairs: store.idNamePairs,
                     currentList: payload,
@@ -115,8 +116,10 @@ export const useGlobalStore = () => {
         // GET THE LIST
         async function asyncChangeListName(id) {
             let response = await api.getPlaylistById(id);
+            console.log(response)
             if (response.data.success) {
-                let playlist = response.data.playist;
+                let playlist = response.data.playlist;
+                console.log(response.data.playlist);
                 playlist.name = newName;
                 async function updateList(playlist) {
                     response = await api.updatePlaylistById(playlist._id, playlist);
@@ -194,6 +197,10 @@ export const useGlobalStore = () => {
     }
     store.redo = function () {
         tps.doTransaction();
+    }
+
+    store.setIsListNameEditActive = function(){
+        return store.listNameActive
     }
 
     // THIS FUNCTION ENABLES THE PROCESS OF EDITING A LIST NAME

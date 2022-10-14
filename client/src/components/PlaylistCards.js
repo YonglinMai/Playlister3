@@ -12,8 +12,16 @@ function PlaylistCards() {
     const { store } = useContext(GlobalStoreContext);
     store.history = useHistory();
 
+    if (store.currentList === null){
+        return(
+            <div id="playlist-cards">
+            </div>
+        )
+    }
+
     return (
         <div id="playlist-cards">
+        {console.log(store.currentList)}
         {
             store.currentList.songs.map((song, index) => (
                 <SongCard
