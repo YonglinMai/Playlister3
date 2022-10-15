@@ -50,6 +50,14 @@ function ListCard(props) {
         setText(event.target.value );
     }
 
+    function handleDeleteList(event) {
+        event.stopPropagation();
+        console.log(idNamePair._id);
+        if(window.confirm("Are you sure you want to delete the " + idNamePair.name + " list ?")){
+            store.deleteList(idNamePair._id);
+        };
+    }
+
     let selectClass = "unselected-list-card";
     if (selected) {
         selectClass = "selected-list-card";
@@ -76,6 +84,7 @@ function ListCard(props) {
                 id={"delete-list-" + idNamePair._id}
                 className="list-card-button"
                 value={"\u2715"}
+                onClick={handleDeleteList}
             />
             <input
                 disabled={cardStatus}

@@ -60,8 +60,8 @@ export const useGlobalStore = () => {
             // CREATE A NEW LIST
             case GlobalStoreActionType.CREATE_NEW_LIST: {
                 return setStore({
-                    idNamePairs: store.idNamePairs,
-                    currentList: payload,
+                    idNamePairs: payload.idNamePairs,
+                    currentList: payload.playlist,
                     newListCounter: store.newListCounter + 1,
                     listNameActive: false
                 })
@@ -211,6 +211,33 @@ export const useGlobalStore = () => {
         });
     }
 
+    // add new list
+    store.createNewList = function () {
+        let list = {"name" : "Untitled"+ (store.idNamePairs.length+1), "songs" : []}
+        async function asyncAddList(){
+            let response = await api.postNewList(list)
+            if(response.data.success){
+                let playlist = response.data.playlist;
+                store.setCurrentList(playlist._id);
+                async function getListPairs(playlist) {
+                    response = await api.getPlaylistPairs();
+                    if (response.data.success) {
+                        let pairsArray = response.data.idNamePairs;
+                        storeReducer({
+                            type: GlobalStoreActionType.CREATE_NEW_LIST,
+                            payload: {
+                                idNamePairs: pairsArray,
+                                playlist: playlist
+                            }
+                        });
+                    }
+                }
+                getListPairs(playlist);
+            }
+        }
+        asyncAddList();
+    }
+
     // adding new song to a list
     store.addNewSong = function () {
         async function asyncAddSong(){
@@ -234,6 +261,49 @@ export const useGlobalStore = () => {
         asyncAddSong();
     }
 
+    store.deleteList = function(id){
+        console.log(id);
+        async function asyncDeleteList(id){
+            let response = await api.deleteList(id)
+            if(response.data.success){
+                async function updateStore(){
+                    response = await api.getPlaylistPairs()
+                    if (response.data.success) {
+                        let pairsArray = response.data.idNamePairs;
+                        storeReducer({
+                            type: GlobalStoreActionType.LOAD_ID_NAME_PAIRS,
+                            payload: pairsArray
+                        });
+                    }
+                }
+                updateStore();
+
+            }
+        }
+        asyncDeleteList(id);
+    }
+
+    store.deleteSong = function(id){
+        async function asyncDeleteSong(id){
+            let response = await api.getPlaylistById(store.currentList._id);
+            if(response.data.success){
+                let playlist = response.data.playlist;
+                playlist.songs.splice(id, 1);
+                async function updateList(playlist){
+                    response = await api.updatePlaylistById(playlist._id, playlist);
+                    console.log(response.data.playlist)
+                    if (response.data.success){
+                        storeReducer({
+                            type: GlobalStoreActionType.SET_CURRENT_LIST,
+                            payload: response.data.playlist
+                        });
+                    }
+                }
+                updateList(playlist);
+            }
+        }
+        asyncDeleteSong(id);
+    }
 
     // THIS GIVES OUR STORE AND ITS REDUCER TO ANY COMPONENT THAT NEEDS IT
     return { store, storeReducer };
