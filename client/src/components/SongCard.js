@@ -10,7 +10,7 @@ function SongCard(props) {
     function handleDeleteSong(event){
         event.stopPropagation();
         if(window.confirm("Are you sure you want to delete " + song.title + " ?")){
-            store.deleteSong(index);
+            store.deleteSongTransaction(index);
         }
     }
 

@@ -22,7 +22,6 @@ export const GlobalStoreActionType = {
 
 // WE'LL NEED THIS TO PROCESS TRANSACTIONS
 const tps = new jsTPS();
-
 // WITH THIS WE'RE MAKING OUR GLOBAL DATA STORE
 // AVAILABLE TO THE REST OF THE APPLICATION
 export const useGlobalStore = () => {
@@ -365,6 +364,40 @@ export const useGlobalStore = () => {
         }
         //let transaction = new MoveSong_Transaction(initId,finalId)
         tps.addTransaction(add_Transaction);
+    }
+
+    let songDeleted = null;
+
+    store.deleteSongTransaction = function(id){
+        let delete_Transaction = new jsTPS();
+        delete_Transaction.doTransaction = function(){
+            songDeleted = store.currentList.songs[id];
+            store.deleteSong(id);
+        }
+
+        delete_Transaction.undoTransaction = function(){
+            console.log(songDeleted)
+            async function asyncinsertSong(id){
+                let response = await api.getPlaylistById(store.currentList._id);
+                if (response.data.success){
+                    let playlist = response.data.playlist;
+                    playlist.songs.splice(id,0,songDeleted);
+                    async function updatePlaylistById(playlist){
+                        response = await api.updatePlaylistById(playlist._id, playlist);
+                        if(response.data.success){
+                            storeReducer({
+                                type: GlobalStoreActionType.SET_CURRENT_LIST,
+                                payload: response.data.playlist
+                            })
+                        }
+                    }
+                    updatePlaylistById(playlist);
+                }
+            }
+            asyncinsertSong(id);
+        }
+        //let transaction = new MoveSong_Transaction(initId,finalId)
+        tps.addTransaction(delete_Transaction);
     }
     // THIS GIVES OUR STORE AND ITS REDUCER TO ANY COMPONENT THAT NEEDS IT
     return { store, storeReducer };
