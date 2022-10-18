@@ -31,7 +31,7 @@ function SongCard(props) {
         let targetIndex = index;
         let sourceIndex = Number(event.dataTransfer.getData("song"));
 
-        store.moveSong(sourceIndex, targetIndex)
+        store.moveSongTransaction(sourceIndex, targetIndex)
     }
 
     return (

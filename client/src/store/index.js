@@ -304,14 +304,28 @@ export const useGlobalStore = () => {
         asyncDeleteSong(id);
     }
 
-    store.moveSong = function(initId, finalId){
-        async function asyncMoveSong(initId, finalId){
+    store.moveSong = function(start, end){
+        async function asyncMoveSong(start, end){
             let response = await api.getPlaylistById(store.currentList._id);
             if(response.data.success){
-                const playlist = response.data.playlist;
-                [playlist.songs[initId], playlist.songs[finalId]] = [playlist.songs[finalId], playlist.songs[initId]]
-                async function updateList(playlist){
-                    response = await api.updatePlaylistById(playlist._id, playlist);
+                const list = response.data.playlist;
+                if (start < end) {
+                    let temp = list.songs[start];
+                    for (let i = start; i < end; i++) {
+                        list.songs[i] = list.songs[i + 1];
+                    }
+                    list.songs[end] = temp;
+                }
+                else if (start > end) {
+                    let temp = list.songs[start];
+                    for (let i = start; i > end; i--) {
+                        list.songs[i] = list.songs[i - 1];
+                    }
+                    list.songs[end] = temp;
+                }
+                //[playlist.songs[initId], playlist.songs[finalId]] = [playlist.songs[finalId], playlist.songs[initId]]
+                async function updateList(list){
+                    response = await api.updatePlaylistById(list._id, list);
                     if (response.data.success){
                         storeReducer({
                             type: GlobalStoreActionType.SET_CURRENT_LIST,
@@ -319,12 +333,39 @@ export const useGlobalStore = () => {
                         });
                     }
                 }
-                updateList(playlist);
+                updateList(list);
             }
         }
-        asyncMoveSong(initId, finalId);
+        asyncMoveSong(start, end);
     }
     
+    store.moveSongTransaction = function( initId, finalId){
+        let moveSong_Transaction = new jsTPS();
+
+        moveSong_Transaction.doTransaction = function(){
+            store.moveSong(initId, finalId)
+        }
+
+        moveSong_Transaction.undoTransaction = function(){
+            store.moveSong(finalId, initId)
+        }
+        //let transaction = new MoveSong_Transaction(initId,finalId)
+        tps.addTransaction(moveSong_Transaction);
+    }
+
+    store.addSongTransaction = function(){
+        let add_Transaction = new jsTPS();
+
+        add_Transaction.doTransaction = function(){
+            store.addNewSong();
+        }
+
+        add_Transaction.undoTransaction = function(){
+            store.deleteSong(store.currentList.songs.length);
+        }
+        //let transaction = new MoveSong_Transaction(initId,finalId)
+        tps.addTransaction(add_Transaction);
+    }
     // THIS GIVES OUR STORE AND ITS REDUCER TO ANY COMPONENT THAT NEEDS IT
     return { store, storeReducer };
 }
