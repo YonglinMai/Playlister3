@@ -19,7 +19,9 @@ export const GlobalStoreActionType = {
     SET_CURRENT_LIST: "SET_CURRENT_LIST",
     SET_LIST_NAME_EDIT_ACTIVE: "SET_LIST_NAME_EDIT_ACTIVE",
     MARK_SONG_DELETION: "MARK_SONG_DELETION",
-    MARK_LIST_FOR_DELETION: "MARK_LIST_FOR_DELETION"
+    MARK_LIST_FOR_DELETION: "MARK_LIST_FOR_DELETION",
+    SET_MODAL: "SET_MODAL",
+
 }
 
 // WE'LL NEED THIS TO PROCESS TRANSACTIONS
@@ -35,7 +37,8 @@ export const useGlobalStore = () => {
         listNameActive: false,
         songMarkedForDeletion: null,
         listMarkedForDeletion: null,
-        listnameMarked: null
+        listnameMarked: null,
+        modalOn: false,
     });
 
     // HERE'S THE DATA STORE'S REDUCER, IT MUST
@@ -55,6 +58,19 @@ export const useGlobalStore = () => {
                     listMarkedForDeletion: store.listMarkedForDeletion
                 });
             }
+
+            case GlobalStoreActionType.SET_MODAL: {
+                return setStore({
+                    idNamePairs: store.idNamePairs,
+                    currentList: store.currentList,
+                    newListCounter: store.newListCounter,
+                    listNameActive: false,
+                    songMarkedForDeletion : store.markListForDeletion,
+                    listMarkedForDeletion: store.listMarkedForDeletion,
+                    modalOn: payload,
+                });
+            }
+
             case GlobalStoreActionType.MARK_SONG_DELETION: {
                 return setStore({
                     idNamePairs: store.idNamePairs,
@@ -243,9 +259,15 @@ export const useGlobalStore = () => {
         tps.undoTransaction();
     }
     store.redo = function () {
-        tps.doTransaction();
+        tps.hasTransactionToRedo();
     }
 
+    store.undoable = function () {
+        return tps.hasTransactionToUndo();
+    }
+    store.redoable = function(){
+        return tps.hasTransactionToRedo();
+    }
     store.setIsListNameEditActive = function(){
         return store.listNameActive
     }
@@ -306,6 +328,7 @@ export const useGlobalStore = () => {
             }
         }
         asyncAddSong();
+        console.log(store.undoable);
     }
 
     store.deleteList = function(id){
@@ -450,6 +473,8 @@ export const useGlobalStore = () => {
         }
         //let transaction = new MoveSong_Transaction(initId,finalId)
         tps.addTransaction(add_Transaction);
+        console.log(tps.hasTransactionToUndo())
+        
     }
 
     let songDeleted = null;
@@ -486,17 +511,22 @@ export const useGlobalStore = () => {
         tps.addTransaction(delete_Transaction);
     }
 
-    let modalOn = false;
     store.showModal = function(modalId){
             let modal = document.getElementById(modalId);
             modal.classList.add("is-visible");
-            modalOn = true;
+            storeReducer({
+                            type: GlobalStoreActionType.SET_MODAL,
+                            payload: !store.modalOn
+                        });
     }
 
     store.closeModal = function(modalId){
         let modal = document.getElementById(modalId);
         modal.classList.remove("is-visible");
-        modalOn = false;
+        storeReducer({
+            type: GlobalStoreActionType.SET_MODAL,
+            payload: !store.modalOn
+        });
     }
     // THIS GIVES OUR STORE AND ITS REDUCER TO ANY COMPONENT THAT NEEDS IT
     return { store, storeReducer };

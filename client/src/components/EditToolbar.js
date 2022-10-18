@@ -35,7 +35,7 @@ function EditToolbar() {
             <input
                 type="button"
                 id='add-song-button'
-                disabled={editStatus}
+                disabled={editStatus || !store.currentList || store.modalOn}
                 value="+"
                 className={enabledButtonClass}
                 onClick={handleAddSong}
@@ -43,7 +43,7 @@ function EditToolbar() {
             <input
                 type="button"
                 id='undo-button'
-                disabled={editStatus}
+                disabled={editStatus || !store.currentList || store.modalOn  || !store.undoable()}
                 value="⟲"
                 className={enabledButtonClass}
                 onClick={handleUndo}
@@ -51,7 +51,7 @@ function EditToolbar() {
             <input
                 type="button"
                 id='redo-button'
-                disabled={editStatus}
+                disabled={editStatus || !store.currentList || store.modalOn || !store.redoable()}
                 value="⟳"
                 className={enabledButtonClass}
                 onClick={handleRedo}
@@ -59,7 +59,7 @@ function EditToolbar() {
             <input
                 type="button"
                 id='close-button'
-                disabled={editStatus}
+                disabled={editStatus || !store.currentList || store.modalOn}
                 value="&#x2715;"
                 className={enabledButtonClass}
                 onClick={handleClose}
