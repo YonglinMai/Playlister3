@@ -53,9 +53,11 @@ function ListCard(props) {
     function handleDeleteList(event) {
         event.stopPropagation();
         console.log(idNamePair._id);
-        if(window.confirm("Are you sure you want to delete the " + idNamePair.name + " list ?")){
-            store.deleteList(idNamePair._id);
-        };
+        store.markListForDeletion(idNamePair._id, idNamePair.name);
+        store.showModal("delete-list-modal");
+        // if(window.confirm("Are you sure you want to delete the " + idNamePair.name + " list ?")){
+        //     store.deleteList(idNamePair._id);
+        // };
     }
 
     let selectClass = "unselected-list-card";
