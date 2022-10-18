@@ -21,7 +21,6 @@ function PlaylistCards() {
 
     return (
         <div id="playlist-cards">
-        {console.log(store.currentList)}
         {
             store.currentList.songs.map((song, index) => (
                 <SongCard

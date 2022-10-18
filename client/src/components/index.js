@@ -5,6 +5,8 @@ import ListSelector from './ListSelector'
 import SongCard from './SongCard'
 import Statusbar from './Statusbar'
 import PlaylistCards from './PlaylistCards'
+import EditSongModal from './EditSongModal.js'
+import DeleteSongModal from './DeleteSongModal'
 /*
     This serves as a module so that we can import
     all the other components as we wish.
@@ -17,4 +19,7 @@ export {    Banner,
             ListSelector, 
             SongCard,
             Statusbar, 
-            PlaylistCards }
+            PlaylistCards,
+            EditSongModal,
+            DeleteSongModal
+        }

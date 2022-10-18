@@ -1,5 +1,6 @@
 import React, { useContext, useState } from 'react'
 import { GlobalStoreContext } from '../store'
+import EditSongModal from './EditSongModal.js'
 
 function SongCard(props) {
     const { store } = useContext(GlobalStoreContext);
@@ -9,9 +10,11 @@ function SongCard(props) {
 
     function handleDeleteSong(event){
         event.stopPropagation();
-        if(window.confirm("Are you sure you want to delete " + song.title + " ?")){
-            store.deleteSongTransaction(index);
-        }
+        store.markSongForDeletion(index);
+        store.showModal("delete-song-modal");
+        // if(window.confirm("Are you sure you want to delete " + song.title + " ?")){
+        //     store.deleteSongTransaction(index);
+        // }
     }
 
     function handleDragStart(event){
@@ -34,6 +37,19 @@ function SongCard(props) {
         store.moveSongTransaction(sourceIndex, targetIndex)
     }
 
+    function handleClick(event){
+        // DOUBLE CLICK IS FOR SONG EDITING
+        if (event.detail === 2) {
+            console.log(event.detail);
+            store.markSongForDeletion(index);
+            document.getElementById('edit-song-modal-title-textfield').value = song.title;
+            document.getElementById('edit-song-modal-artist-textfield').value = song.artist;
+            document.getElementById('edit-song-modal-youTubeId-textfield').value = song.youTubeId;
+            store.showModal("edit-song-modal");
+            
+        }
+    }
+
     return (
         <div
             key={index}
@@ -44,6 +60,7 @@ function SongCard(props) {
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragEnter}
             onDrop={handleDrop}
+            onClick={handleClick}
             draggable="true"
         >
             {index + 1}.

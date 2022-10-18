@@ -18,6 +18,7 @@ export const GlobalStoreActionType = {
     LOAD_ID_NAME_PAIRS: "LOAD_ID_NAME_PAIRS",
     SET_CURRENT_LIST: "SET_CURRENT_LIST",
     SET_LIST_NAME_EDIT_ACTIVE: "SET_LIST_NAME_EDIT_ACTIVE",
+    MARK_SONG_DELETION: "MARK_SONG_DELETION"
 }
 
 // WE'LL NEED THIS TO PROCESS TRANSACTIONS
@@ -30,13 +31,16 @@ export const useGlobalStore = () => {
         idNamePairs: [],
         currentList: null,
         newListCounter: 0,
-        listNameActive: false
+        listNameActive: false,
+        songMarkedForDeletion : null
     });
 
     // HERE'S THE DATA STORE'S REDUCER, IT MUST
     // HANDLE EVERY TYPE OF STATE CHANGE
     const storeReducer = (action) => {
         const { type, payload } = action;
+        console.log(type);
+        console.log(payload);
         switch (type) {
             // LIST UPDATE OF ITS NAME
             case GlobalStoreActionType.CHANGE_LIST_NAME: {
@@ -47,6 +51,16 @@ export const useGlobalStore = () => {
                     listNameActive: false
                 });
             }
+            case GlobalStoreActionType.MARK_SONG_DELETION: {
+                return setStore({
+                    idNamePairs: store.idNamePairs,
+                    currentList: store.currentList,
+                    newListCounter: store.newListCounter,
+                    listNameActive: false,
+                    songMarkedForDeletion : payload
+                });
+            }
+
             // STOP EDITING THE CURRENT LIST
             case GlobalStoreActionType.CLOSE_CURRENT_LIST: {
                 return setStore({
@@ -109,6 +123,13 @@ export const useGlobalStore = () => {
     // DRIVE THE STATE OF THE APPLICATION. WE'LL CALL THESE IN 
     // RESPONSE TO EVENTS INSIDE OUR COMPONENTS.
 
+    store.markSongForDeletion = function(index){
+        storeReducer({
+            type: GlobalStoreActionType.MARK_SONG_DELETION,
+            payload:index
+        })
+    }
+    
     // THIS FUNCTION PROCESSES CHANGING A LIST NAME
     store.changeListName = function (id, newName) {
         // GET THE LIST
@@ -337,7 +358,44 @@ export const useGlobalStore = () => {
         }
         asyncMoveSong(start, end);
     }
-    
+    store.editSong = function(index, newSong){
+        async function asyncEditSong(index, newSong){
+            let response = await api.getPlaylistById(store.currentList._id);
+            console.log(response)
+            if(response.data.success){
+                const playlist = response.data.playlist;
+                playlist.songs[index] = newSong;
+                async function updatePlaylistById(playlist){
+                    response = await api.updatePlaylistById(playlist._id, playlist);
+                    if (response.data.success){
+                        storeReducer({
+                            type: GlobalStoreActionType.SET_CURRENT_LIST,
+                            payload: response.data.playlist
+                        });
+                    }
+                }
+                updatePlaylistById(playlist)
+            }
+        }
+        asyncEditSong(index, newSong);
+    }
+
+    let songEdited = ""
+    store.editSongTransaction = function(id, newSong){
+        let edit_Transaction = new jsTPS();
+
+        edit_Transaction.doTransaction = function(){
+            songEdited = store.currentList.songs[id];
+            store.editSong(id, newSong);
+        }
+
+        edit_Transaction.undoTransaction = function(){
+            store.editSong(id, songEdited);
+        }
+        //let transaction = new MoveSong_Transaction(initId,finalId)
+        tps.addTransaction(edit_Transaction);
+    }
+
     store.moveSongTransaction = function( initId, finalId){
         let moveSong_Transaction = new jsTPS();
 
@@ -398,6 +456,19 @@ export const useGlobalStore = () => {
         }
         //let transaction = new MoveSong_Transaction(initId,finalId)
         tps.addTransaction(delete_Transaction);
+    }
+
+    let modalOn = false;
+    store.showModal = function(modalId){
+            let modal = document.getElementById(modalId);
+            modal.classList.add("is-visible");
+            modalOn = true;
+    }
+
+    store.closeModal = function(modalId){
+        let modal = document.getElementById(modalId);
+        modal.classList.remove("is-visible");
+        modalOn = false;
     }
     // THIS GIVES OUR STORE AND ITS REDUCER TO ANY COMPONENT THAT NEEDS IT
     return { store, storeReducer };
