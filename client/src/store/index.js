@@ -86,7 +86,6 @@ export const useGlobalStore = () => {
             }
             // UPDATE A LIST
             case GlobalStoreActionType.SET_CURRENT_LIST: {
-                console.log(payload)
                 return setStore({
                     idNamePairs: store.idNamePairs,
                     currentList: payload,
@@ -305,6 +304,27 @@ export const useGlobalStore = () => {
         asyncDeleteSong(id);
     }
 
+    store.moveSong = function(initId, finalId){
+        async function asyncMoveSong(initId, finalId){
+            let response = await api.getPlaylistById(store.currentList._id);
+            if(response.data.success){
+                const playlist = response.data.playlist;
+                [playlist.songs[initId], playlist.songs[finalId]] = [playlist.songs[finalId], playlist.songs[initId]]
+                async function updateList(playlist){
+                    response = await api.updatePlaylistById(playlist._id, playlist);
+                    if (response.data.success){
+                        storeReducer({
+                            type: GlobalStoreActionType.SET_CURRENT_LIST,
+                            payload: response.data.playlist
+                        });
+                    }
+                }
+                updateList(playlist);
+            }
+        }
+        asyncMoveSong(initId, finalId);
+    }
+    
     // THIS GIVES OUR STORE AND ITS REDUCER TO ANY COMPONENT THAT NEEDS IT
     return { store, storeReducer };
 }
