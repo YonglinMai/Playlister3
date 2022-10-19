@@ -38,7 +38,10 @@ const ListSelector = () => {
                     onClick={handleCreateNewList}
                     className="playlister-button"
                     value="+" />
-                Your Lists
+                    <br></br>
+                    <br></br>
+                    <br></br>
+
             </div>                {
                     listCard
                 }
