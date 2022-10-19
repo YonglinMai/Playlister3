@@ -53,8 +53,10 @@ function ListCard(props) {
     function handleDeleteList(event) {
         event.stopPropagation();
         console.log(idNamePair._id);
-        store.markListForDeletion(idNamePair._id, idNamePair.name);
+        //store.markListNameForDeletion(idNamePair.name)
+        console.log(store.listnameMarked)
         store.showModal("delete-list-modal");
+        store.markListForDeletion(idNamePair._id, idNamePair.name);
         // if(window.confirm("Are you sure you want to delete the " + idNamePair.name + " list ?")){
         //     store.deleteList(idNamePair._id);
         // };

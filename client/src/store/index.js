@@ -20,6 +20,7 @@ export const GlobalStoreActionType = {
     SET_LIST_NAME_EDIT_ACTIVE: "SET_LIST_NAME_EDIT_ACTIVE",
     MARK_SONG_DELETION: "MARK_SONG_DELETION",
     MARK_LIST_FOR_DELETION: "MARK_LIST_FOR_DELETION",
+    MARK_LIST_NAME_FOR_DELETION: "MARK_LIST_NAME_FOR_DELETION",
     SET_MODAL: "SET_MODAL",
 
 }
@@ -123,10 +124,23 @@ export const useGlobalStore = () => {
                     newListCounter: store.newListCounter,
                     listNameActive: false,
                     songMarkedForDeletion: store.songMarkedForDeletion,
-                    listMarkedForDeletion: payload.id,
-                    listnameMarked: payload.name
+                    listMarkedForDeletion: payload.listMarkedForDeletion,
+                    listnameMarked: payload.listnameMarked
                 });
             }
+
+            case GlobalStoreActionType.MARK_LIST_NAME_FOR_DELETION:{
+                return setStore({
+                    idNamePairs: store.idNamePairs,
+                    currentList: null,
+                    newListCounter: store.newListCounter,
+                    listNameActive: false,
+                    songMarkedForDeletion: store.songMarkedForDeletion,
+                    listMarkedForDeletion: store.listMarkedForDeletion,
+                    listnameMarked: payload
+                });
+            }
+
             // UPDATE A LIST
             case GlobalStoreActionType.SET_CURRENT_LIST: {
                 return setStore({
@@ -165,14 +179,22 @@ export const useGlobalStore = () => {
     }
 
     store.markListForDeletion = function(id, name){
+        console.log(id, name)
         storeReducer({
             type: GlobalStoreActionType.MARK_LIST_FOR_DELETION,
-            payload:{
-                id:id,
-                name:name
-            }
+            payload:{listMarkedForDeletion: id,
+                listnameMarked: name}
         });
+        console.log(store.listMarkedForDeletion)
     }
+    // store.markListNameForDeletion = function(name){
+    //     console.log(name)
+    //     storeReducer({
+    //         type: GlobalStoreActionType.MARK_LIST_NAME_FOR_DELETION,
+    //         payload:name
+    //     });
+    //     console.log(store.listnameMarked);
+    // }
     // THIS FUNCTION PROCESSES CHANGING A LIST NAME
     store.changeListName = function (id, newName) {
         // GET THE LIST

@@ -1,11 +1,21 @@
 import React, { useContext, useState } from 'react'
 import { GlobalStoreContext } from '../store'
 
+
 function DeleteListModal(){
     const { store } = useContext(GlobalStoreContext);
+    const [text, setText] = useState("")
+    const [ editActive, setEditActive ] = useState(false);
 
-    const id = store.listMarkedForDeletion;
-    const name = store.listnameMarked;
+    let id = store.listMarkedForDeletion;
+    console.log(id)
+    let name = "";
+
+    if(id !== null){
+        name = store.listnameMarked;
+    }
+
+    
 
     function handleConfirmDeleteList () {
         store.deleteList(id);
@@ -30,7 +40,7 @@ function DeleteListModal(){
                             Delete Song</div>
                     <div
                         id="delete-list-modal-content"
-                        className="modal-center"> Are you sure you wish to permanently delete {name} from the playlist?
+                        className="modal-center"> Are you sure you wish to permanently delete the {name} playlist?
                     </div>
                     <div className="modal-south">
                         <input type="button" id="delete-list-confirm-button" className="modal-button" value='Confirm' onClick={handleConfirmDeleteList} />
